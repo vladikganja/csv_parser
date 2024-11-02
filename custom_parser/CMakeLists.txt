@@ -11,6 +11,9 @@ set_target_properties(${ProjectId} PROPERTIES
 )
 
 target_include_directories(${ProjectId} PUBLIC .)
+target_link_libraries(${ProjectId}
+    utils
+)
 
 target_compile_options(${ProjectId} PRIVATE
     -Wall -Wextra

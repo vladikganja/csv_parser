@@ -14,7 +14,7 @@ namespace ozma {
 
 namespace benchmark {
 
-constexpr static size_t DIST_ARRAY_SIZE = 20;
+constexpr static size_t DIST_ARRAY_SIZE = 30;
 
 template <typename BenchType>
 struct DistArray : public std::array<size_t, DIST_ARRAY_SIZE> {
@@ -32,16 +32,18 @@ public:
     }
 
     static void end(BenchType bench) {
-        auto& stat = *stats[static_cast<size_t>(bench)];
         const auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(
                                  TimePoint::clock::now() - measurements[static_cast<size_t>(bench)])
                                  .count();
+        auto& stat = *stats[static_cast<size_t>(bench)];
         stat.timeElapsedNano += elapsed;
         stat.calls++;
-        if (stat.dist.oneTenthMean == 0 && stat.calls == CALLS_TO_ENSURE_MEAN) {
+        if (stat.calls == CALLS_TO_ENSURE_MEAN) {
             stat.dist.oneTenthMean = stat.timeElapsedNano / (stat.calls * 10);
+            stat.dist.measurements += stat.calls - 1;
+            stat.dist[elapsed / stat.dist.oneTenthMean] += stat.calls - 1;
         }
-        // We have ensured mean, let's estimate distributiln
+        // We have ensured mean, let's estimate distribution
         if (stat.dist.oneTenthMean != 0) {
             stat.dist[std::min(elapsed / stat.dist.oneTenthMean, size_t{ DIST_ARRAY_SIZE - 1 })]++;
             stat.dist.measurements++;
@@ -64,7 +66,7 @@ public:
     }
 
 private:
-    constexpr static inline size_t CALLS_TO_ENSURE_MEAN = 10;
+    constexpr static inline size_t CALLS_TO_ENSURE_MEAN = 20;
     struct Stat {
         size_t timeElapsedNano;
         size_t calls;
@@ -105,11 +107,15 @@ public:
 #define BENCH_DISTR(BenchType, BenchName)                                                          \
     benchmark::Benchmark<BenchType, BenchType##Size>::getDistribution(BenchType::BenchName)
 
+#define BENCH_DISTR_AVG(BenchType, BenchName)                                                      \
+    benchmark::Benchmark<BenchType, BenchType##Size>::getDistribution(BenchType::BenchName)        \
+        << "\nAvg time: " << BENCH_AVG(BenchType, BenchName).count() << " ns"
+
 template <typename BenchType>
 inline std::stringstream&
 operator<<(std::stringstream& ss, const benchmark::DistArray<BenchType>& arr) {
     constexpr size_t lineStart = 16;
-    constexpr size_t lineLen = 30;
+    constexpr size_t lineLen = 100;
     const auto max = *std::max_element(arr.begin(), arr.end());
     const auto unitLen = static_cast<double>(max) / lineLen;
     {
@@ -140,7 +146,10 @@ operator<<(std::stringstream& ss, const benchmark::DistArray<BenchType>& arr) {
         }
         ss << "|\n";
     }
-    ss << "______________________________________________|\n";
+    for (size_t i = 0; i < lineStart + lineLen; i++) {
+        ss << '_';
+    }
+    ss << "|\n";
     return ss;
 }
 

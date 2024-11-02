@@ -10,10 +10,12 @@ file(GLOB_RECURSE sources
     "${CMAKE_SOURCE_DIR}/lib/*.cpp"
 )
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/abseil")
-include_directories("${CMAKE_SOURCE_DIR}/3rdparty/abseil/absl")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/concurrentqueue")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/rapidcsv")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/vinces")
 
 include_directories("${CMAKE_SOURCE_DIR}/3rdparty/")
 
 add_subdirectory(bin)
-add_subdirectory(lib)
+add_subdirectory(custom_parser)
+add_subdirectory(utils)

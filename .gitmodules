@@ -1,0 +1,12 @@
+[submodule "3rdparty/vinces"]
+	path = 3rdparty/vinces
+	url = git@github.com:vincentlaucsb/csv-parser.git
+[submodule "3rdparty/rapidcsv"]
+	path = 3rdparty/rapidcsv
+	url = git@github.com:d99kris/rapidcsv.git
+[submodule "3rdparty/fastcsv"]
+	path = 3rdparty/fastcsv
+	url = git@github.com:ben-strasser/fast-cpp-csv-parser.git
+[submodule "3rdparty/concurrentqueue"]
+	path = 3rdparty/concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue.git

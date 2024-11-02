@@ -3,6 +3,7 @@ project(${ProjectId})
 
 add_library(${ProjectId} STATIC
     logger.cpp
+    benchmark.cpp
 )
 
 set_target_properties(${ProjectId} PROPERTIES
@@ -13,5 +14,5 @@ set_target_properties(${ProjectId} PROPERTIES
 target_include_directories(${ProjectId} PUBLIC .)
 
 target_compile_options(${ProjectId} PRIVATE
-    -Wall -Wextra -pedantic -Werror
+    -Wall -Wextra
 )

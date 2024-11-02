@@ -1,0 +1,44 @@
+# Language: Cpp
+ColumnLimit: 100
+IndentWidth: 4
+SpacesBeforeTrailingComments: 3
+
+# BreakBeforeBraces: Mozilla
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeComma
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass:      false
+  AfterControlStatement: false
+  AfterEnum:       false
+  AfterNamespace:  false
+  AfterObjCDeclaration: true
+  AfterStruct:     false
+  AfterUnion:      false
+  AfterExternBlock: false
+  BeforeCatch:     false
+  BeforeElse:      false
+  IndentBraces:    false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+  AfterFunction:   false
+IndentExternBlock: false
+
+BinPackArguments: false
+BinPackParameters: false
+AllowAllArgumentsOnNextLine: true
+# PackConstructorInitializers: Never
+AlignAfterOpenBracket: AlwaysBreak
+AllowAllParametersOfDeclarationOnNextLine: true
+
+Cpp11BracedListStyle: false
+ReferenceAlignment: Left
+PointerAlignment: Left
+AccessModifierOffset: -4
+IndentPPDirectives: AfterHash
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: false
+AlwaysBreakTemplateDeclarations: Yes

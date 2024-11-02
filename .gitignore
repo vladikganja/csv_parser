@@ -1,5 +1,5 @@
 .build
-logs
+.logs
 
 # Prerequisites
 *.d

@@ -12,9 +12,9 @@
 
 #define INIT_LOGGER(...) ozma::Logger::init(__VA_ARGS__)
 
-#define INFO(Comp) *ozma::Logger::getInstance().log(ozma::Logger::Level::Info)
-#define WARN(Comp) *ozma::Logger::getInstance().log(ozma::Logger::Level::Warning)
-#define ERROR(Comp) *ozma::Logger::getInstance().log(ozma::Logger::Level::Error)
+#define INFO() *ozma::Logger::getInstance().log(ozma::Logger::Level::Info)
+#define WARN() *ozma::Logger::getInstance().log(ozma::Logger::Level::Warning)
+#define ERROR() *ozma::Logger::getInstance().log(ozma::Logger::Level::Error)
 
 namespace ozma {
 

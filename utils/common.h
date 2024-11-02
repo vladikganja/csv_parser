@@ -66,7 +66,8 @@ namespace ozma {
     case Name::CASE9(Name, __VA_ARGS__)
 
 #define DECLARE_ENUM(Name, Num, ...)                                                               \
-    inline std::string_view Name##Str(Name obj) {                                                  \
+    [[maybe_unused]] const size_t Name##Size = Num;                                                \
+    [[maybe_unused]] inline std::string_view Name##Str(Name obj) {                                 \
         switch (obj) {                                                                             \
         case Name::CASE##Num(Name, __VA_ARGS__)                                                    \
         }                                                                                          \

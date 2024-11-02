@@ -8,7 +8,7 @@ namespace ozma {
 
 namespace {
 
-const std::string FILE_LOG = "./logs/common.log";
+const std::string FILE_LOG = "./.logs/common.log";
 
 Logger* logger = nullptr;
 

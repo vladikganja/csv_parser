@@ -3,7 +3,10 @@ project(${ProjectId})
 
 find_package(Boost COMPONENTS program_options REQUIRED)
 
-add_executable(${ProjectId} main.cpp)
+add_executable(${ProjectId}
+    main.cpp
+    launch_bench.cpp
+)
 
 set_target_properties(${ProjectId} PROPERTIES
     CXX_STANDARD 20
@@ -19,5 +22,5 @@ target_link_libraries(${ProjectId} PRIVATE
 target_include_directories(${ProjectId} PUBLIC ${CMAKE_SOURCE_DIR})
 
 target_compile_options(${ProjectId} PRIVATE
-    -Wall -Wextra
+    -Wall -Wextra -lpthread
 )

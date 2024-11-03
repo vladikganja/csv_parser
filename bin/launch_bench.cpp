@@ -20,105 +20,6 @@ namespace ozma {
 
 namespace {
 
-const std::string FILE_PATH = "./csv/data.csv";
-
-using Fastcsv = io::CSVReader<4, io::trim_chars<' ', '\t'>, io::double_quote_escape<',', '\"'>>;
-using Rapidcsv = rapidcsv::Document;
-using Vinces = csv::CSVReader;
-
-enum class Reader { Fastcsv, Rapidcsv, Vinces };
-DECLARE_ENUM(Reader, 3, Fastcsv, Rapidcsv, Vinces);
-
-template <typename Reader>
-class Parser;
-
-template <>
-class Parser<Fastcsv> {
-public:
-    Parser()
-        : reader_(FILE_PATH) {
-    }
-
-    std::optional<BTCUSDT> parseLine() { 
-        valid_ = reader_.read_row(body_, id_, b1_, b2_);
-        if (valid_ && (id_ == BTCUSDT::iD1 || id_ == BTCUSDT::iD2)) {
-            return parser_.parse(body_);
-        }
-        return std::nullopt;
-    }
-
-    bool valid() const {
-        return valid_;
-    }
-
-private:
-    Fastcsv reader_;
-    CustomParser parser_;
-    std::string body_;
-    int32_t id_, b1_, b2_;
-    bool valid_;
-};
-
-template <>
-class Parser<Rapidcsv> {
-private:
-    const static inline size_t DATA_COL = 0;
-    const static inline size_t ID_COL = 1;
-
-public:
-    Parser()
-        : reader_(FILE_PATH), lines_(reader_.GetRowCount()), line_(0) {
-    }
-
-    std::optional<BTCUSDT> parseLine() {
-        const auto id = reader_.GetCell<int32_t>(ID_COL, line_);
-        if (id == BTCUSDT::iD1 || id == BTCUSDT::iD2) {
-            return parser_.parse(reader_.GetCell<std::string>(DATA_COL, line_++));
-        }
-        line_++;
-        return std::nullopt;
-    }
-
-    bool valid() const {
-        return line_ < lines_;
-    }
-
-private:
-    Rapidcsv reader_;
-    CustomParser parser_;
-    size_t lines_;
-    size_t line_;
-};
-
-template <>
-class Parser<Vinces> {
-private:
-    const static inline size_t DATA_COL = 0;
-    const static inline size_t ID_COL = 1;
-
-public:
-    Parser()
-        : reader_(FILE_PATH), cur_(reader_.begin()) {
-    }
-
-    std::optional<BTCUSDT> parseLine() {
-        if ((*cur_)[ID_COL] == BTCUSDT::iD1 || (*cur_)[ID_COL] == BTCUSDT::iD2) {
-            return parser_.parse((*cur_++)[DATA_COL]);
-        }
-        ++cur_;
-        return std::nullopt;
-    }
-
-    bool valid() const {
-        return cur_ != reader_.end();
-    }
-
-private:
-    Vinces reader_;
-    CustomParser parser_;
-    Vinces::iterator cur_;
-};
-
 void setThreadAffinity() {
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
@@ -150,6 +51,107 @@ void prepare() {
     lockMemory();
 }
 
+const std::string FILE_PATH = "./csv/data.csv";
+
+using Fastcsv = io::CSVReader<4, io::trim_chars<' ', '\t'>, io::double_quote_escape<',', '\"'>>;
+using Rapidcsv = rapidcsv::Document;
+using Vinces = csv::CSVReader;
+
+enum class ReaderType { Fastcsv, Rapidcsv, Vinces };
+DECLARE_ENUM(ReaderType, 3, Fastcsv, Rapidcsv, Vinces);
+
+enum class ParserType { Mock, NlohmannJson, SimdJson, Custom, CustomSimd };
+DECLARE_ENUM(ParserType, 5, Mock, NlohmannJson, SimdJson, Custom, CustomSimd);
+
+template <typename ReaderT>
+class Reader;
+
+template <>
+class Reader<Fastcsv> {
+public:
+    Reader()
+        : reader_(FILE_PATH) {
+    }
+
+    std::optional<std::string> readLine() { 
+        valid_ = reader_.read_row(body_, id_, b1_, b2_);
+        if (valid_ && (id_ == BTCUSDT::iD1 || id_ == BTCUSDT::iD2)) {
+            return std::optional<std::string>{std::move(body_)};
+        }
+        return std::nullopt;
+    }
+
+    bool valid() const {
+        return valid_;
+    }
+
+private:
+    Fastcsv reader_;
+    std::string body_;
+    int32_t id_, b1_, b2_;
+    bool valid_ = true;
+};
+
+template <>
+class Reader<Rapidcsv> {
+private:
+    const static inline size_t DATA_COL = 0;
+    const static inline size_t ID_COL = 1;
+
+public:
+    Reader()
+        : reader_(FILE_PATH)
+        , lines_(reader_.GetRowCount())
+        , line_(0) {
+    }
+
+    std::optional<std::string> readLine() {
+        const auto id = reader_.GetCell<int32_t>(ID_COL, line_);
+        if (id == BTCUSDT::iD1 || id == BTCUSDT::iD2) {
+            return reader_.GetCell<std::string>(DATA_COL, line_++);
+        }
+        line_++;
+        return std::nullopt;
+    }
+
+    bool valid() const {
+        return line_ < lines_;
+    }
+
+private:
+    Rapidcsv reader_;
+    size_t lines_;
+    size_t line_;
+};
+
+template <>
+class Reader<Vinces> {
+private:
+    const static inline size_t DATA_COL = 0;
+    const static inline size_t ID_COL = 1;
+
+public:
+    Reader()
+        : reader_(FILE_PATH), cur_(reader_.begin()) {
+    }
+
+    std::optional<std::string> readLine() {
+        if ((*cur_)[ID_COL] == BTCUSDT::iD1 || (*cur_)[ID_COL] == BTCUSDT::iD2) {
+            return (*cur_++)[DATA_COL].get();
+        }
+        ++cur_;
+        return std::nullopt;
+    }
+
+    bool valid() const {
+        return cur_ != reader_.end();
+    }
+
+private:
+    Vinces reader_;
+    Vinces::iterator cur_;
+};
+
 }   // namespace
 
 struct hdr_histogram* histogram;
@@ -158,36 +160,38 @@ void launch() {
     prepare();
 
     {
-        Parser<Rapidcsv> parser;
+        Reader<Rapidcsv> parser;
         for (; parser.valid();) {
-            BENCH_START(Reader, Rapidcsv);
-            auto bts = parser.parseLine();
-            UNUSED(bts);
-            BENCH_END(Reader, Rapidcsv);
-        }
-        INFO() << BENCH_DISTR(Reader, Rapidcsv);
-    }
+            BENCH_START(ReaderType, Rapidcsv);
+            auto data = parser.readLine();
+            BENCH_END(ReaderType, Rapidcsv);
+            if (data) {
+                BENCH_START(ParserType, Mock);
+                auto btc1 = MockParser::parse(*data);
+                BENCH_END(ParserType, Mock);
+                INFO() << btc1;
 
-    {
-        Parser<Fastcsv> parser;
-        for (; parser.valid();) {
-            BENCH_START(Reader, Fastcsv);
-            auto bts = parser.parseLine();
-            UNUSED(bts);
-            BENCH_END(Reader, Fastcsv);
-        }
-        INFO() << BENCH_DISTR(Reader, Fastcsv);
-    }
+                BENCH_START(ParserType, NlohmannJson);
+                auto btc2 = NlohmannJsonParser::parse(*data);
+                BENCH_END(ParserType, NlohmannJson);
+                INFO() << btc2;
 
-    {
-        Parser<Vinces> parser;
-        for (; parser.valid();) {
-            BENCH_START(Reader, Vinces);
-            auto bts = parser.parseLine();
-            UNUSED(bts);
-            BENCH_END(Reader, Vinces);
+                BENCH_START(ParserType, SimdJson);
+                auto btc3 = SimdJsonParser::parse(*data);
+                BENCH_END(ParserType, SimdJson);
+                INFO() << btc3;
+
+                BENCH_START(ParserType, Custom);
+                auto btc4 = CustomParser::parse(*data);
+                BENCH_END(ParserType, Custom);
+                INFO() << btc4;
+            }
         }
-        INFO() << BENCH_DISTR(Reader, Vinces);
+        INFO() << BENCH_DISTR(ReaderType, Rapidcsv);
+        INFO() << BENCH_DISTR(ParserType, Mock);
+        INFO() << BENCH_DISTR(ParserType, NlohmannJson);
+        INFO() << BENCH_DISTR(ParserType, SimdJson);
+        INFO() << BENCH_DISTR(ParserType, Custom);
     }
 }
 

@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <cstring>
+#include <stdexcept>
+#include <sstream>
 
 namespace ozma {
 

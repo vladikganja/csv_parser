@@ -14,6 +14,8 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/concurrentqueue")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/rapidcsv")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/vinces")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/hdr_histogram")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/json")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/simdjson")
 
 include_directories("${CMAKE_SOURCE_DIR}/3rdparty/")
 

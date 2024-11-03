@@ -12,6 +12,8 @@ set_target_properties(${ProjectId} PROPERTIES
 
 target_include_directories(${ProjectId} PUBLIC .)
 target_link_libraries(${ProjectId}
+    nlohmann_json::nlohmann_json
+    simdjson
     utils
 )
 

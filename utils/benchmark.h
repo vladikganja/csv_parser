@@ -89,7 +89,7 @@ private:
             benchmark::Benchmark<BenchType, BenchType##Size>::getHist(BenchType::BenchName);       \
         stat == nullptr) {                                                                         \
         benchmark::Benchmark<BenchType, BenchType##Size>::init(                                    \
-            BenchType::BenchName, #BenchType"::"#BenchName);                                          \
+            BenchType::BenchName, #BenchType "::" #BenchName);                                     \
     }                                                                                              \
     benchmark::Benchmark<BenchType, BenchType##Size>::start(BenchType::BenchName)
 

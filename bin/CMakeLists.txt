@@ -15,6 +15,7 @@ set_target_properties(${ProjectId} PROPERTIES
 
 target_link_libraries(${ProjectId} PRIVATE
     Boost::program_options
+    hdr_histogram
     csv_parser_lib
     utils
 )

@@ -152,6 +152,8 @@ void prepare() {
 
 }   // namespace
 
+struct hdr_histogram* histogram;
+
 void launch() {
     prepare();
 
@@ -163,7 +165,7 @@ void launch() {
             UNUSED(bts);
             BENCH_END(Reader, Rapidcsv);
         }
-        INFO() << BENCH_DISTR_AVG(Reader, Rapidcsv);
+        INFO() << BENCH_DISTR(Reader, Rapidcsv);
     }
 
     {
@@ -174,7 +176,7 @@ void launch() {
             UNUSED(bts);
             BENCH_END(Reader, Fastcsv);
         }
-        INFO() << BENCH_DISTR_AVG(Reader, Fastcsv);
+        INFO() << BENCH_DISTR(Reader, Fastcsv);
     }
 
     {
@@ -185,7 +187,7 @@ void launch() {
             UNUSED(bts);
             BENCH_END(Reader, Vinces);
         }
-        INFO() << BENCH_DISTR_AVG(Reader, Vinces);
+        INFO() << BENCH_DISTR(Reader, Vinces);
     }
 }
 

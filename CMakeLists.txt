@@ -13,6 +13,7 @@ file(GLOB_RECURSE sources
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/concurrentqueue")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/rapidcsv")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/vinces")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/hdr_histogram")
 
 include_directories("${CMAKE_SOURCE_DIR}/3rdparty/")
 

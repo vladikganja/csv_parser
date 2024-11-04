@@ -37,11 +37,6 @@ inline std::stringstream& operator<<(std::stringstream& ss, BTCUSDT btc) {
     return ss;
 }
 
-class MockParser {
-public:
-    static BTCUSDT parse(const std::string& message);
-};
-
 class NlohmannJsonParser {
 public:
     static BTCUSDT parse(const std::string& message);
@@ -53,6 +48,11 @@ public:
 };
 
 class CustomParser {
+public:
+    static BTCUSDT parse(const std::string& message);
+};
+
+class CustomAvxParser {
 public:
     static BTCUSDT parse(const std::string& message);
 };

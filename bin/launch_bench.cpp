@@ -60,8 +60,8 @@ using Vinces = csv::CSVReader;
 enum class ReaderType { Fastcsv, Rapidcsv, Vinces };
 DECLARE_ENUM(ReaderType, 3, Fastcsv, Rapidcsv, Vinces);
 
-enum class ParserType { Mock, NlohmannJson, SimdJson, Custom, CustomSimd };
-DECLARE_ENUM(ParserType, 5, Mock, NlohmannJson, SimdJson, Custom, CustomSimd);
+enum class ParserType { NlohmannJson, SimdJson, Custom, CustomAvx };
+DECLARE_ENUM(ParserType, 4, NlohmannJson, SimdJson, Custom, CustomAvx);
 
 template <typename ReaderT>
 class Reader;
@@ -160,39 +160,102 @@ void launch() {
     prepare();
 
     {
-        Reader<Rapidcsv> parser;
-        for (; parser.valid();) {
-            BENCH_START(ReaderType, Rapidcsv);
-            auto data = parser.readLine();
-            BENCH_END(ReaderType, Rapidcsv);
+        Reader<Fastcsv> reader;
+        for (; reader.valid();) {
+            BENCH_START(ReaderType, Fastcsv);
+            auto data = reader.readLine();
+            BENCH_END(ReaderType, Fastcsv);
             if (data) {
-                BENCH_START(ParserType, Mock);
-                auto btc1 = MockParser::parse(*data);
-                BENCH_END(ParserType, Mock);
-                INFO() << btc1;
-
                 BENCH_START(ParserType, NlohmannJson);
                 auto btc2 = NlohmannJsonParser::parse(*data);
                 BENCH_END(ParserType, NlohmannJson);
-                INFO() << btc2;
+                //INFO() << btc2;
 
                 BENCH_START(ParserType, SimdJson);
                 auto btc3 = SimdJsonParser::parse(*data);
                 BENCH_END(ParserType, SimdJson);
-                INFO() << btc3;
+                //INFO() << btc3;
 
                 BENCH_START(ParserType, Custom);
                 auto btc4 = CustomParser::parse(*data);
                 BENCH_END(ParserType, Custom);
-                INFO() << btc4;
+                //INFO() << btc4;
+
+                BENCH_START(ParserType, CustomAvx);
+                auto btc5 = CustomAvxParser::parse(*data);
+                BENCH_END(ParserType, CustomAvx);
+                //INFO() << btc5;
             }
         }
-        INFO() << BENCH_DISTR(ReaderType, Rapidcsv);
-        INFO() << BENCH_DISTR(ParserType, Mock);
-        INFO() << BENCH_DISTR(ParserType, NlohmannJson);
-        INFO() << BENCH_DISTR(ParserType, SimdJson);
-        INFO() << BENCH_DISTR(ParserType, Custom);
     }
+
+    {
+        Reader<Vinces> reader;
+        for (; reader.valid();) {
+            BENCH_START(ReaderType, Vinces);
+            auto data = reader.readLine();
+            BENCH_END(ReaderType, Vinces);
+            if (data) {
+                BENCH_START(ParserType, NlohmannJson);
+                auto btc2 = NlohmannJsonParser::parse(*data);
+                BENCH_END(ParserType, NlohmannJson);
+                //INFO() << btc2;
+
+                BENCH_START(ParserType, SimdJson);
+                auto btc3 = SimdJsonParser::parse(*data);
+                BENCH_END(ParserType, SimdJson);
+                //INFO() << btc3;
+
+                BENCH_START(ParserType, Custom);
+                auto btc4 = CustomParser::parse(*data);
+                BENCH_END(ParserType, Custom);
+                //INFO() << btc4;
+
+                BENCH_START(ParserType, CustomAvx);
+                auto btc5 = CustomAvxParser::parse(*data);
+                BENCH_END(ParserType, CustomAvx);
+                //INFO() << btc5;
+            }
+        }
+    }
+
+    {
+        Reader<Rapidcsv> reader;
+        for (; reader.valid();) {
+            BENCH_START(ReaderType, Rapidcsv);
+            auto data = reader.readLine();
+            BENCH_END(ReaderType, Rapidcsv);
+            if (data) {
+                BENCH_START(ParserType, NlohmannJson);
+                auto btc2 = NlohmannJsonParser::parse(*data);
+                BENCH_END(ParserType, NlohmannJson);
+                //INFO() << btc2;
+
+                BENCH_START(ParserType, SimdJson);
+                auto btc3 = SimdJsonParser::parse(*data);
+                BENCH_END(ParserType, SimdJson);
+                //INFO() << btc3;
+
+                BENCH_START(ParserType, Custom);
+                auto btc4 = CustomParser::parse(*data);
+                BENCH_END(ParserType, Custom);
+                //INFO() << btc4;
+
+                BENCH_START(ParserType, CustomAvx);
+                auto btc5 = CustomAvxParser::parse(*data);
+                BENCH_END(ParserType, CustomAvx);
+                //INFO() << btc5;
+            }
+        }
+    }
+
+    INFO() << BENCH_DISTR(ReaderType, Fastcsv);
+    INFO() << BENCH_DISTR(ReaderType, Vinces);
+    INFO() << BENCH_DISTR(ReaderType, Rapidcsv);
+    INFO() << BENCH_DISTR(ParserType, NlohmannJson);
+    INFO() << BENCH_DISTR(ParserType, SimdJson);
+    INFO() << BENCH_DISTR(ParserType, Custom);
+    INFO() << BENCH_DISTR(ParserType, CustomAvx);
 }
 
 }   // namespace ozma

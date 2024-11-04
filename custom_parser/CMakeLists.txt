@@ -18,5 +18,5 @@ target_link_libraries(${ProjectId}
 )
 
 target_compile_options(${ProjectId} PRIVATE
-    -Wall -Wextra
+    -Wall -Wextra -mavx2
 )

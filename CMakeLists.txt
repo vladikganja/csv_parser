@@ -20,5 +20,5 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/simdjson")
 include_directories("${CMAKE_SOURCE_DIR}/3rdparty/")
 
 add_subdirectory(bin)
-add_subdirectory(custom_parser)
+add_subdirectory(parsers)
 add_subdirectory(utils)

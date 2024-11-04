@@ -1,5 +1,6 @@
 .build
 .logs
+csv
 
 # Prerequisites
 *.d

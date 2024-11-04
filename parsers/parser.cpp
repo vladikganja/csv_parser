@@ -132,6 +132,33 @@ struct Charset {
     char set[8]{ 0, 0, 0, 0, 0, 0, 0, 0 };
 };
 
+/*
+    Original article: http://0x80.pl/articles/simd-parsing-int-sequences.html#id19
+
+    Example:
+    input data:
+    d4bit32[0]: "64833250","64833250","64833250""64833250"
+    d4bit32[1]: "00000050","00833250","00003250""00000250"
+
+    converting:
+    1. 1c8bits	32: ['6','4','8','3','3','2','5','0'...] : _mm256_subs_epu8('0');
+    2. 1d8bits	32: [6, 4, 8, 3, 3, 2, 5, 0...] : _mm256_maddubs_epi16 [10, 1, 10, 1...]
+    3. 2d16bit	16: [64, 83, 32, 50...] : vec_mult_add_to_32 [100, 1, 100, 1...]
+    4. 4d32bit	8:  [6483, 3250...] : _mm256_packus_epi32 [e, e...] <- from d4bit32[1]
+    5. 4d16bit	16: [6483, 3250...] shuffled after pack
+
+        _mm256_packus_epi32(left, right)
+        left:   8 32bit numbers:    [a,a,b,b,c,c,d,d]
+        right:  8 32bit numbers:    [e,e,f,f,g,g,h,h]
+        sum:    16 16bit numbers:   [a,a,b,b,e,e,f,f,c,c,d,d,g,g,h,h]
+
+                                                        : _mm256_madd_epi16 [10'000, 1...]
+
+    6. 8d32bit	8:  [a,b,e,f,c,d,g,h] : _mm256_cvtepi32_ps
+    7. 8f32bit  8:  [af,bf,ef,ff,cf,df,gf,hf] : _mm256_div_ps [100.f, 1000.f...]
+    8. 8f32bit (prices with 2 fraction digints; sizes with 3 fraction digits)
+    9. deshuffle
+*/
 std::array<float, 256> parseCharsToFloatsAvx(std::array<Charset, 256>& chars, size_t size) {
     std::array<float, 256> result;
     for (size_t i = 0, resI = 0;; i += 8) {
@@ -164,7 +191,7 @@ std::array<float, 256> parseCharsToFloatsAvx(std::array<Charset, 256>& chars, si
         for (size_t j : {0, 1, 4, 5, 2, 3, 6, 7}) {
             result[resI++] = f8Shuffled[j];
         }
-        if (i > size) {
+        if (i >= size) {
             break;
         }
     }
@@ -185,7 +212,7 @@ BTCUSDT CustomAvxParser::parse(const std::string& message) {
     char order[2]{ 0, 0 };
     size_t orderI = 0;
     size_t sideLen[2] { 0, 0 };
-    std::array<Charset, 256> chars;
+    alignas(64) std::array<Charset, 256> chars;
     size_t charsI = 0;
     for (size_t i = abBeg; i < message.size();) {
         // ab switch //
